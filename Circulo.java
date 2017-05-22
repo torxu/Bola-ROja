@@ -11,12 +11,18 @@ import javafx.event.EventHandler;
 import javafx.animation.Animation;
 import javafx.util.Duration;
 import javafx.scene.control.Button;
+import java.util.Random;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 
 public class Circulo extends Application
 {
             
-        static int dx = 1;
-        static int dy = 1;
+    private int dx = 5;
+    private int dy = 5;
+    private int rx = 5;
+    
     public static void main(String[] args)
     {
         launch(args);
@@ -29,41 +35,65 @@ public class Circulo extends Application
         
         Scene escena = new Scene(contenedor, 500, 500);
         
-        Circle circulo = new Circle(20, Color.web("red"));
-        circulo.relocate(250, 250);
+        Circle circulo = new Circle(10, Color.web("red"));
+        Rectangle rectangulo = new Rectangle(100,10, Color.web("blue"));
         
+        Random rnd = new Random();
+        Random r = new Random();
+        int valorRandom = rnd.nextInt(480)+10;
+        int valorRandom2 = r.nextInt(480)+10;
         
+        circulo.relocate(valorRandom, valorRandom2);
+        rectangulo.relocate(200,450);
         
         contenedor.getChildren().add(circulo);
+        contenedor.getChildren().add(rectangulo);
         
-
         Timeline tl = new Timeline();
         tl.setCycleCount(Animation.INDEFINITE);
         KeyFrame moveBall = new KeyFrame(Duration.seconds(.0200),
                 new EventHandler<ActionEvent>() {
                     public void handle(ActionEvent event) {
+                        double xMin = circulo.getBoundsInParent().getMinX();
+                        double yMin = circulo.getBoundsInParent().getMinY();
+                        double xMax = circulo.getBoundsInParent().getMaxX();
+                        double yMax = circulo.getBoundsInParent().getMaxY();
+
+                        if (xMin < 0 || xMax > escena.getWidth()) {
+                            dx = dx * -1;
+                        }
+                        if (yMin < 0 || yMax > escena.getHeight()) {
+                            dy = dy * -1;
+                        }
+                        
+                        
+                        if(rectangulo.getBoundsInParent().intersects(circulo.getBoundsInParent())){
+                            dy = dy * -1;
+                        }
+                        
                         circulo.setTranslateX(circulo.getTranslateX() + dx);
                         circulo.setTranslateY(circulo.getTranslateY() + dy);
+                        
+                        rectangulo.setTranslateX(rectangulo.getTranslateX() + rx);
+                        
+                        
+                        
                     }
                 });
-        tl.getKeyFrames().add(moveBall);
-        tl.play();
-        
-        Button boton = new Button("Stop/Start");
-        boton.setOnAction(new EventHandler<ActionEvent>(){
-            public void handle(ActionEvent event){
-                if(!tl.getStatus().equals(Animation.Status.PAUSED)){
-                    tl.pause();
-                }
-                else{
-                    tl.play();
-                }
-            }
+             
+        escena.setOnKeyPressed(t ->{
+               if (t.getCode() == KeyCode.LEFT) {
+                  rx = -5;
+               }
+               if (t.getCode() == KeyCode.RIGHT) {
+                  rx = 5;
+               }
+            
         });
         
-        contenedor.getChildren().add(boton);
-        
-        
+        tl.getKeyFrames().add(moveBall);
+        tl.play();
+                        
         escenario.setScene(escena);
         
         escenario.show();
